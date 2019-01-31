@@ -115,177 +115,55 @@ static void insertWidgetIntoSplitter(QSplitter* Splitter, QWidget* widget, bool 
 	}
 }
 
-/**
- * Private data class of CDockContainerWidget class (pimpl)
- */
-class DockContainerWidgetPrivate
+int& DockContainerWidgetPrivate::visibleDockAreaCount()
 {
-public:
-	CDockContainerWidget* _this;
-	QPointer<CDockManager> DockManager;
-	unsigned int zOrderIndex = 0;
-	QList<CDockAreaWidget*> DockAreas;
-	QGridLayout* Layout = nullptr;
-	QSplitter* RootSplitter = nullptr;
-	bool isFloating = false;
-	CDockAreaWidget* LastAddedAreaCache[5]{0, 0, 0, 0, 0};
-	int VisibleDockAreaCount = -1;
-	CDockAreaWidget* TopLevelDockArea = nullptr;
+	// Lazy initialisation - we initialize the VisibleDockAreaCount variable
+	// on first use
+	initVisibleDockAreaCount();
+	return VisibleDockAreaCount;
+}
 
-	/**
-	 * Private data constructor
-	 */
-	DockContainerWidgetPrivate(CDockContainerWidget* _public);
-
-	/**
-	 * Adds dock widget to container and returns the dock area that contains
-	 * the inserted dock widget
-	 */
-	CDockAreaWidget* dockWidgetIntoContainer(DockWidgetArea area, CDockWidget* Dockwidget);
-
-	/**
-	 * Adds dock widget to a existing DockWidgetArea
-	 */
-	CDockAreaWidget* dockWidgetIntoDockArea(DockWidgetArea area, CDockWidget* Dockwidget,
-		CDockAreaWidget* TargetDockArea);
-
-	/**
-	 * Add dock area to this container
-	 */
-	void addDockArea(CDockAreaWidget* NewDockWidget, DockWidgetArea area = CenterDockWidgetArea);
-
-	/**
-	 * Drop floating widget into container
-	 */
-	void dropIntoContainer(CFloatingDockContainer* FloatingWidget, DockWidgetArea area);
-
-	/**
-	 * Drop floating widget into dock area
-	 */
-	void dropIntoSection(CFloatingDockContainer* FloatingWidget,
-		CDockAreaWidget* TargetArea, DockWidgetArea area);
-
-	/**
-	 * Creates a new tab for a widget dropped into the center of a section
-	 */
-	void dropIntoCenterOfSection(CFloatingDockContainer* FloatingWidget,
-		CDockAreaWidget* TargetArea);
-
-	/**
-	 * Adds new dock areas to the internal dock area list
-	 */
-	void addDockAreasToList(const QList<CDockAreaWidget*> NewDockAreas);
-
-	/**
-	 * Wrapper function for DockAreas append, that ensures that dock area signals
-	 * are properly connected to dock container slots
-	 */
-	void appendDockAreas(const QList<CDockAreaWidget*> NewDockAreas);
-
-	/**
-	 * Save state of child nodes
-	 */
-	void saveChildNodesState(QXmlStreamWriter& Stream, QWidget* Widget);
-
-	/**
-	 * Restore state of child nodes.
-	 * \param[in] Stream The data stream that contains the serialized state
-	 * \param[out] CreatedWidget The widget created from parsed data or 0 if
-	 * the parsed widget was an empty splitter
-	 * \param[in] Testing If Testing is true, only the stream data is
-	 * parsed without modifiying anything.
-	 */
-	bool restoreChildNodes(QXmlStreamReader& Stream, QWidget*& CreatedWidget,
-		bool Testing);
-
-	/**
-	 * Restores a splitter.
-	 * \see restoreChildNodes() for details
-	 */
-	bool restoreSplitter(QXmlStreamReader& Stream, QWidget*& CreatedWidget,
-		bool Testing);
-
-	/**
-	 * Restores a dock area.
-	 * \see restoreChildNodes() for details
-	 */
-	bool restoreDockArea(QXmlStreamReader& Stream, QWidget*& CreatedWidget,
-		bool Testing);
-
-	/**
-	 * Helper function for recursive dumping of layout
-	 */
-	void dumpRecursive(int level, QWidget* widget);
-
-	/**
-	 * Initializes the visible dock area count variable if it is not initialized
-	 * yet
-	 */
-	void initVisibleDockAreaCount()
+void DockContainerWidgetPrivate::initVisibleDockAreaCount()
+{
+	if (VisibleDockAreaCount > -1)
 	{
-		if (VisibleDockAreaCount > -1)
-		{
-			return;
-		}
-
-		VisibleDockAreaCount = 0;
-		for (auto DockArea : DockAreas)
-		{
-			VisibleDockAreaCount += DockArea->isHidden() ? 0 : 1;
-		}
+		return;
 	}
 
-	/**
-	 * Access function for the visible dock area counter
-	 */
-	int& visibleDockAreaCount()
+	VisibleDockAreaCount = 0;
+	for (auto DockArea : DockAreas)
 	{
-		// Lazy initialisation - we initialize the VisibleDockAreaCount variable
-		// on first use
-		initVisibleDockAreaCount();
-		return VisibleDockAreaCount;
+		VisibleDockAreaCount += DockArea->isHidden() ? 0 : 1;
 	}
+}
 
-	/**
-	 * The visible dock area count changes, if dock areas are remove, added or
-	 * when its view is toggled
-	 */
-	void onVisibleDockAreaCountChanged();
+void DockContainerWidgetPrivate::emitDockAreasRemoved()
+{
+	onVisibleDockAreaCountChanged();
+	emit _this->dockAreasRemoved();
+}
 
-	void emitDockAreasRemoved()
-	{
-		onVisibleDockAreaCountChanged();
-		emit _this->dockAreasRemoved();
-	}
+void DockContainerWidgetPrivate::emitDockAreasAdded()
+{
+	onVisibleDockAreaCountChanged();
+	emit _this->dockAreasAdded();
+}
 
-	void emitDockAreasAdded()
-	{
-		onVisibleDockAreaCountChanged();
-		emit _this->dockAreasAdded();
-	}
+CDockSplitter* DockContainerWidgetPrivate::newSplitter(Qt::Orientation orientation, QWidget* parent)
+{
+	CDockSplitter* s = new CDockSplitter(orientation, parent);
+	s->setOpaqueResize(DockManager->configFlags().testFlag(CDockManager::OpaqueSplitterResize));
+	s->setChildrenCollapsible(false);
+	return s;
+}
 
-	/**
-	 * Helper function for creation of new splitter
-	 */
-	CDockSplitter* newSplitter(Qt::Orientation orientation, QWidget* parent = 0)
-	{
-		CDockSplitter* s = new CDockSplitter(orientation, parent);
-		s->setOpaqueResize(DockManager->configFlags().testFlag(CDockManager::OpaqueSplitterResize));
-		s->setChildrenCollapsible(false);
-		return s;
-	}
-
-
-// private slots: ------------------------------------------------------------
-	void onDockAreaViewToggled(bool Visible)
-	{
-		CDockAreaWidget* DockArea = qobject_cast<CDockAreaWidget*>(_this->sender());
-		VisibleDockAreaCount += Visible ? 1 : -1;
-		onVisibleDockAreaCountChanged();
-		emit _this->dockAreaViewToggled(DockArea, Visible);
-	}
-}; // struct DockContainerWidgetPrivate
-
+void DockContainerWidgetPrivate::onDockAreaViewToggled(bool Visible)
+{
+	CDockAreaWidget* DockArea = qobject_cast<CDockAreaWidget*>(_this->sender());
+	VisibleDockAreaCount += Visible ? 1 : -1;
+	onVisibleDockAreaCountChanged();
+	emit _this->dockAreaViewToggled(DockArea, Visible);
+}
 
 //============================================================================
 DockContainerWidgetPrivate::DockContainerWidgetPrivate(CDockContainerWidget* _public) :
@@ -1464,7 +1342,5 @@ void CDockContainerWidget::closeOtherAreas(CDockAreaWidget* KeepOpenArea)
 
 
 } // namespace ads
-
-#include "moc_DockContainerWidget.cpp"
 //---------------------------------------------------------------------------
 // EOF DockContainerWidget.cpp

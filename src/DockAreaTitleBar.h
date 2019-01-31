@@ -31,7 +31,6 @@
 //                                   INCLUDES
 //============================================================================
 #include <QFrame>
-
 #include "ads_globals.h"
 
 class QAbstractButton;
