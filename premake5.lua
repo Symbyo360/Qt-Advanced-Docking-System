@@ -1,7 +1,7 @@
 ads = path.getabsolute(".")
 
 function use_ads()
-	includedirs "%{ads}/include"
+	includedirs "%{ads}/src"
 	links "ads"
 end
 
