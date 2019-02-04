@@ -23,7 +23,8 @@ project "ads"
 		"src/DockWidgetTab.cpp",
 		"src/ElidingLabel.cpp",
 		"src/FloatingDockContainer.cpp",
-		"src/ads_globals.cpp"
+		"src/ads_globals.cpp",
+		"src/ads.qrc"
 	}
 
 	includedirs
