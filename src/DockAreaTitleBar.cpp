@@ -36,7 +36,7 @@
 #include <QMenu>
 #include <QScrollArea>
 #include <QMouseEvent>
-#include <QDebug>
+//#include <QDebug>
 
 #include "ads_globals.h"
 #include "FloatingDockContainer.h"
@@ -250,7 +250,7 @@ void CDockAreaTitleBar::onTabsMenuAboutToShow()
 //============================================================================
 void CDockAreaTitleBar::onCloseButtonClicked()
 {
-	qDebug() << "CDockAreaTitleBar::onCloseButtonClicked";
+	//qDebug() << "CDockAreaTitleBar::onCloseButtonClicked";
 	if (d->testConfigFlag(CDockManager::DockAreaCloseButtonClosesTab))
 	{
 		d->TabBar->closeTab(d->TabBar->currentIndex());

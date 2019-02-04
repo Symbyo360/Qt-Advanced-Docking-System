@@ -37,7 +37,7 @@
 #include <QWheelEvent>
 #include <QStyle>
 #include <QPushButton>
-#include <QDebug>
+//#include <QDebug>
 #include <QMenu>
 #include <QSplitter>
 #include <QXmlStreamWriter>
@@ -357,7 +357,7 @@ CDockAreaWidget::CDockAreaWidget(CDockManager* DockManager, CDockContainerWidget
 //============================================================================
 CDockAreaWidget::~CDockAreaWidget()
 {
-	qDebug() << "~CDockAreaWidget()";
+	//qDebug() << "~CDockAreaWidget()";
 	delete d->ContentsLayout;
 	delete d;
 }
@@ -410,7 +410,7 @@ void CDockAreaWidget::insertDockWidget(int index, CDockWidget* DockWidget,
 //============================================================================
 void CDockAreaWidget::removeDockWidget(CDockWidget* DockWidget)
 {
-	qDebug() << "CDockAreaWidget::removeDockWidget";
+	//qDebug() << "CDockAreaWidget::removeDockWidget";
 	auto NextOpenDockWidget = nextOpenDockWidget(DockWidget);
 
 	d->ContentsLayout->removeWidget(DockWidget);
@@ -423,7 +423,7 @@ void CDockAreaWidget::removeDockWidget(CDockWidget* DockWidget)
 	}
 	else if (d->ContentsLayout->isEmpty())
 	{
-		qDebug() << "Dock Area empty";
+		//qDebug() << "Dock Area empty";
 		dockContainer()->removeDockArea(this);
 		this->deleteLater();
 	}
@@ -484,7 +484,7 @@ void CDockAreaWidget::hideAreaWithNoVisibleContent()
 //============================================================================
 void CDockAreaWidget::onTabCloseRequested(int Index)
 {
-	qDebug() << "CDockAreaWidget::onTabCloseRequested " << Index;
+	//qDebug() << "CDockAreaWidget::onTabCloseRequested " << Index;
 	dockWidget(Index)->toggleView(false);
 }
 
@@ -533,7 +533,7 @@ void CDockAreaWidget::setCurrentIndex(int index)
 	auto TabBar = d->tabBar();
 	if (index < 0 || index > (TabBar->count() - 1))
 	{
-		qWarning() << Q_FUNC_INFO << "Invalid index" << index;
+		//qWarning() << Q_FUNC_INFO << "Invalid index" << index;
 		return;
     }
 
@@ -647,11 +647,11 @@ CDockWidget* CDockAreaWidget::dockWidget(int Index) const
 //============================================================================
 void CDockAreaWidget::reorderDockWidget(int fromIndex, int toIndex)
 {
-	qDebug() << "CDockAreaWidget::reorderDockWidget";
+	//qDebug() << "CDockAreaWidget::reorderDockWidget";
 	if (fromIndex >= d->ContentsLayout->count() || fromIndex < 0
      || toIndex >= d->ContentsLayout->count() || toIndex < 0 || fromIndex == toIndex)
 	{
-		qDebug() << "Invalid index for tab movement" << fromIndex << toIndex;
+		//qDebug() << "Invalid index for tab movement" << fromIndex << toIndex;
 		return;
 	}
 
@@ -692,8 +692,8 @@ void CDockAreaWidget::saveState(QXmlStreamWriter& s) const
 	auto CurrentDockWidget = currentDockWidget();
 	QString Name = CurrentDockWidget ? CurrentDockWidget->objectName() : "";
 	s.writeAttribute("Current", Name);
-	qDebug() << "CDockAreaWidget::saveState TabCount: " << d->ContentsLayout->count()
-			<< " Current: " << Name;
+	//qDebug() << "CDockAreaWidget::saveState TabCount: " << d->ContentsLayout->count()
+	//		<< " Current: " << Name;
 	for (int i = 0; i < d->ContentsLayout->count(); ++i)
 	{
 		dockWidget(i)->saveState(s);
