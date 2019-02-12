@@ -49,8 +49,10 @@ project "ads"
 	filter "system:linux"
 		os.mkdir("generated")
 
-	filter "configurations:debug"
+	filter { "system:windows", "configurations:debug" }
 		qtsuffix "d"
+
+	filter "configurations:debug"
 		defines {"ADS_SHARED_EXPORT"}
 
 	filter "configurations:release"
