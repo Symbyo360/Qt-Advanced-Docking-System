@@ -440,9 +440,12 @@ void CFloatingDockContainer::startFloating(const QPoint& DragStartMousePos, cons
 //============================================================================
 void CFloatingDockContainer::moveFloating()
 {
-	int BorderSize = (frameSize().width() - size().width()) / 2;
-	const QPoint moveToPos = QCursor::pos() - d->DragStartMousePosition - QPoint(BorderSize, 0);
-	move(moveToPos);
+	//Note(Shaalan): this causes the first time you click and drag a window to
+	//undock it to be laggy because this function is called twice with different parameter so it wobbles(lag)
+	//ADS needs a complete rehaul after all
+	//int BorderSize = (frameSize().width() - size().width()) / 2;
+	//const QPoint moveToPos = QCursor::pos() - d->DragStartMousePosition - QPoint(BorderSize, 0);
+	//move(moveToPos);
 }
 
 
